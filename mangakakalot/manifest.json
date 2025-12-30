@@ -1,0 +1,9 @@
+{
+    "id": "mangakakalot",
+    "name": "Mangakakalot",
+    "version": "1.0.0",
+    "baseUrl": "https://www.mangakakalot.gg",
+    "icon": "icon.png",
+    "language": "en",
+    "nsfw": false
+}

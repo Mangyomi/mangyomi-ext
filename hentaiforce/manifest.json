@@ -1,0 +1,9 @@
+{
+    "id": "hentaiforce",
+    "name": "HentaiForce",
+    "version": "1.0.0",
+    "baseUrl": "https://hentaiforce.net",
+    "icon": "icon.png",
+    "language": "en",
+    "nsfw": true
+}
