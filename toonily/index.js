@@ -1,18 +1,17 @@
-// Toonily Extension
-// Uses Node.js fetch with JSDOM for HTML parsing
+
 
 const { JSDOM } = require('jsdom');
 
 const BASE_URL = 'https://toonily.me';
 
-// Helper for delay
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Keep track of last request time to rate limit
+
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 600; // ms
 
-// Fetch page content with proper headers and retry logic
+
 async function fetchPage(url, retries = 2, customHeaders = {}) {
     // Rate limit
     const now = Date.now();
@@ -74,13 +73,13 @@ async function fetchPage(url, retries = 2, customHeaders = {}) {
     }
 }
 
-// Parse HTML string into a document
+
 function parseHTML(html) {
     const dom = new JSDOM(html);
     return dom.window.document;
 }
 
-// Check if there is a next page
+
 function checkHasNextPage(doc) {
     // Check for 'next' link in pagination
     const nextLink = doc.querySelector('.paginator a[rel="next"]');
@@ -101,7 +100,7 @@ module.exports = {
         };
     },
 
-    // Search Manga
+
     async searchManga(query, page) {
         if (!query) {
             return this.getLatestManga(page);
@@ -147,7 +146,7 @@ module.exports = {
         };
     },
 
-    // Get Latest Manga
+
     async getLatestManga(page) {
         const url = `${this.baseUrl}/latest?page=${page}`;
         const html = await fetchPage(url);
@@ -216,7 +215,7 @@ module.exports = {
         };
     },
 
-    // Manga Details
+
     async getMangaDetails(mangaId) {
         const url = `${this.baseUrl}/${mangaId}`;
         const html = await fetchPage(url);
@@ -262,7 +261,7 @@ module.exports = {
         };
     },
 
-    // Chapter List
+
     async getChapterList(mangaId) {
         const url = `${this.baseUrl}/${mangaId}`;
         const html = await fetchPage(url);
@@ -307,7 +306,7 @@ module.exports = {
         return chapters;
     },
 
-    // Chapter Pages
+
     async getChapterPages(mangaId, chapterId) {
         // Handle case where only 1 argument is passed (chapterId)
         if (!chapterId) {

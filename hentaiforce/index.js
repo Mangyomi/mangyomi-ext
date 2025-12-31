@@ -1,19 +1,18 @@
-// HentaiForce Extension
-// Uses Node.js fetch with JSDOM for HTML parsing
+
 
 const { JSDOM } = require('jsdom');
 
 const BASE_URL = 'https://hentaiforce.net';
 const IMAGE_CDN = 'https://m1.hentaiforce.me';
 
-// Helper for delay
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Keep track of last request time to rate limit
+
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 600; // ms
 
-// Fetch page content with proper headers and retry logic
+
 async function fetchPage(url, retries = 2) {
     // Rate limit
     const now = Date.now();
@@ -60,13 +59,13 @@ async function fetchPage(url, retries = 2) {
     }
 }
 
-// Parse HTML string into a document
+
 function parseHTML(html) {
     const dom = new JSDOM(html);
     return dom.window.document;
 }
 
-// Parse gallery list items from document (homepage/search results)
+
 function parseGalleryList(doc) {
     const items = [];
     const seenIds = new Set();
@@ -249,7 +248,7 @@ function parseGalleryList(doc) {
     return items;
 }
 
-// Check if there's a next page
+
 function hasNextPage(doc) {
     const pagination = doc.querySelector('.pagination');
     if (!pagination) return false;
@@ -269,14 +268,14 @@ function hasNextPage(doc) {
 }
 
 module.exports = {
-    // Required headers for loading images
+
     getImageHeaders() {
         return {
             'Referer': BASE_URL + '/',
         };
     },
 
-    // Get popular manga (using homepage)
+
     async getPopularManga(page) {
         try {
             const url = page === 1 ? BASE_URL : `${BASE_URL}/?page=${page}`;
@@ -293,7 +292,7 @@ module.exports = {
         }
     },
 
-    // Get latest manga
+
     async getLatestManga(page) {
         const url = page === 1 ? BASE_URL : `${BASE_URL}/?page=${page}`;
         const html = await fetchPage(url);
@@ -305,7 +304,7 @@ module.exports = {
         };
     },
 
-    // Search manga
+
     async searchManga(query, page) {
         const searchQuery = encodeURIComponent(query);
         const url = `${BASE_URL}/search?q=${searchQuery}&page=${page}`;
@@ -318,7 +317,7 @@ module.exports = {
         };
     },
 
-    // Get manga details (gallery page)
+
     async getMangaDetails(mangaId) {
         const url = `${BASE_URL}/view/${mangaId}`;
         const html = await fetchPage(url);
@@ -388,9 +387,9 @@ module.exports = {
         };
     },
 
-    // Get chapter list (doujins have only one "chapter" - the gallery itself)
+
     async getChapterList(mangaId) {
-        // For doujin sites, the whole gallery is one "chapter"
+        // HentaiForce doesn't have chapters, the whole gallery is one "chapter"
         return [{
             id: mangaId,
             title: 'Full Gallery',
@@ -399,7 +398,7 @@ module.exports = {
         }];
     },
 
-    // Get chapter pages (all image URLs in the gallery)
+
     async getChapterPages(chapterId) {
         const url = `${BASE_URL}/view/${chapterId}`;
         const html = await fetchPage(url);

@@ -1,5 +1,4 @@
-// Mangakakalot Extension
-// Uses Node.js fetch with JSDOM for HTML parsing
+
 
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
@@ -8,14 +7,14 @@ const os = require('os');
 
 const BASE_URL = 'https://www.mangakakalot.gg';
 
-// Helper for delay
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Keep track of last request time to rate limit
+
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 600; // ms
 
-// Fetch page content with proper headers and retry logic
+
 async function fetchPage(url, retries = 2) {
     // Rate limit
     const now = Date.now();
@@ -62,13 +61,13 @@ async function fetchPage(url, retries = 2) {
     }
 }
 
-// Parse HTML string into a document
+
 function parseHTML(html) {
     const dom = new JSDOM(html);
     return dom.window.document;
 }
 
-// Parse manga list items from document
+
 function parseMangaList(doc) {
     const items = [];
 
@@ -150,7 +149,7 @@ function parseMangaList(doc) {
     return items;
 }
 
-// Check if there's a next page
+
 function hasNextPage(doc) {
     // Look for pagination elements
     const lastPage = doc.querySelector('.page_last, a.page_blue.page_last');
@@ -160,14 +159,14 @@ function hasNextPage(doc) {
 }
 
 module.exports = {
-    // Required headers for loading images
+
     getImageHeaders() {
         return {
             'Referer': BASE_URL + '/',
         };
     },
 
-    // Get popular manga
+
     async getPopularManga(page) {
         try {
             const url = `${BASE_URL}/manga-list/hot-manga?page=${page}`;
@@ -184,7 +183,7 @@ module.exports = {
         }
     },
 
-    // Get latest manga
+
     async getLatestManga(page) {
         const url = `${BASE_URL}/manga-list/latest-manga?page=${page}`;
         const html = await fetchPage(url);
@@ -196,7 +195,7 @@ module.exports = {
         };
     },
 
-    // Search manga
+
     async searchManga(query, page) {
         const searchQuery = query.replace(/\s+/g, '_');
         const url = `${BASE_URL}/search/story/${searchQuery}?page=${page}`;
@@ -209,7 +208,7 @@ module.exports = {
         };
     },
 
-    // Get manga details
+
     async getMangaDetails(mangaId) {
         const url = `${BASE_URL}/manga/${mangaId}`;
         const html = await fetchPage(url);
@@ -329,7 +328,7 @@ module.exports = {
         };
     },
 
-    // Get chapter list
+
     async getChapterList(mangaId) {
         const url = `${BASE_URL}/manga/${mangaId}`;
         const html = await fetchPage(url);
@@ -380,7 +379,7 @@ module.exports = {
         return uniqueChapters;
     },
 
-    // Get chapter pages (image URLs)
+
     async getChapterPages(chapterId) {
         const url = `${BASE_URL}/manga/${chapterId}`;
         const html = await fetchPage(url);
