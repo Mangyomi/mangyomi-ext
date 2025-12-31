@@ -1,0 +1,9 @@
+{
+    "id": "weebcentral",
+    "name": "Weeb Central",
+    "version": "1.0.0",
+    "baseUrl": "https://weebcentral.com",
+    "icon": "icon.png",
+    "language": "en",
+    "nsfw": false
+}
