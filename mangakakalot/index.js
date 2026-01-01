@@ -325,6 +325,7 @@ module.exports = {
             description,
             status,
             genres,
+            url,
         };
     },
 

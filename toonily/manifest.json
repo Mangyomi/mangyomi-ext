@@ -1,7 +1,7 @@
 {
     "id": "toonily",
     "name": "Toonily",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "baseUrl": "https://toonily.me",
     "icon": "https://toonily.me/static/sites/toonily/icons/apple-touch-icon.png",
     "language": "en",

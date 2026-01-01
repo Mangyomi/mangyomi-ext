@@ -240,6 +240,7 @@ module.exports = {
             description,
             status,
             genres,
+            url,
         };
     },
 
@@ -300,7 +301,7 @@ module.exports = {
 
         for (const img of images) {
             let src = img.src || img.getAttribute('src') || '';
-            const alt = img.alt || img.getAttribute('alt') || '';
+            const alt = img.alt || img.getAttribute('alt') | '';
 
             if (!alt.startsWith('Page') && !src.includes('planeptune')) continue;
 

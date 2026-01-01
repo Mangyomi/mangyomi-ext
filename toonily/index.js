@@ -257,7 +257,8 @@ module.exports = {
             artist: author, // Toonily often groups them
             description,
             status,
-            genres
+            genres,
+            url
         };
     },
 

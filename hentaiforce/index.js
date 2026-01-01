@@ -384,6 +384,7 @@ module.exports = {
             ],
             status: 'completed', // Doujins are always complete
             genres,
+            url,
         };
     },
 
