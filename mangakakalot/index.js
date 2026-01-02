@@ -260,11 +260,20 @@ module.exports = {
         // Extract description
         let textContent = '';
 
-        // 1. Try JSON-LD (Most reliable)
         try {
             const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
             for (const script of scripts) {
-                const data = JSON.parse(script.textContent);
+                const sanitizedJson = script.textContent.replace(/[\x00-\x1F\x7F]/g, (char) => {
+                    const escapes = {
+                        '\b': '\\b',
+                        '\f': '\\f',
+                        '\n': '\\n',
+                        '\r': '\\r',
+                        '\t': '\\t',
+                    };
+                    return escapes[char] || '';
+                });
+                const data = JSON.parse(sanitizedJson);
                 if (data['@type'] === 'Book' && data.description) {
                     textContent = data.description;
                     break;
