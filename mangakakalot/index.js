@@ -329,15 +329,27 @@ module.exports = {
             }
         }
 
-        // Extract genres
-        const genreContainer = doc.querySelector('.manga-info-text li:last-child, .genres-content');
-        if (genreContainer) {
-            const genreLinks = genreContainer.querySelectorAll('a');
-            for (const link of genreLinks) {
-                const genre = link.textContent?.trim();
-                if (genre && !genre.toLowerCase().includes('genre')) {
-                    genres.push(genre);
-                }
+        // Extract genres from multiple possible locations
+        // 1. Try .genres-wrap .genre-list a (new layout)
+        let genreLinks = doc.querySelectorAll('.genres-wrap .genre-list a');
+
+        // 2. Try .manga-info-text li.genres a (alternative layout)
+        if (genreLinks.length === 0) {
+            genreLinks = doc.querySelectorAll('.manga-info-text li.genres a');
+        }
+
+        // 3. Fallback to old selectors
+        if (genreLinks.length === 0) {
+            const genreContainer = doc.querySelector('.manga-info-text li:last-child, .genres-content');
+            if (genreContainer) {
+                genreLinks = genreContainer.querySelectorAll('a');
+            }
+        }
+
+        for (const link of genreLinks) {
+            const genre = link.textContent?.trim();
+            if (genre && !genre.toLowerCase().includes('genre')) {
+                genres.push(genre);
             }
         }
 
