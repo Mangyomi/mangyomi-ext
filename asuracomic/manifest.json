@@ -1,0 +1,11 @@
+{
+    "id": "asuracomic",
+    "name": "Asura Scans",
+    "version": "1.0.0",
+    "baseUrl": "https://asuracomic.net",
+    "icon": {
+        "png": "icon.webp"
+    },
+    "language": "en",
+    "nsfw": false
+}

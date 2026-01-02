@@ -100,6 +100,71 @@ module.exports = {
         };
     },
 
+    getFilters() {
+        return [
+            {
+                id: 'sort',
+                label: 'Order By',
+                type: 'select',
+                options: [
+                    { value: 'popular', label: 'Popular' },
+                    { value: 'latest', label: 'Latest Updates' },
+                    { value: 'newest', label: 'Newest' },
+                    { value: 'top-day', label: 'Top Day' },
+                    { value: 'top-week', label: 'Top Week' },
+                    { value: 'top-month', label: 'Top Month' },
+                ],
+                default: 'popular'
+            },
+            {
+                id: 'status',
+                label: 'Status',
+                type: 'select',
+                options: [
+                    { value: 'all', label: 'All' },
+                    { value: 'Ongoing', label: 'Ongoing' },
+                    { value: 'Completed', label: 'Completed' },
+                ],
+                default: 'all'
+            },
+            {
+                id: 'genre',
+                label: 'Genre',
+                type: 'select',
+                options: [
+                    { value: 'all', label: 'All Genres' },
+                    { value: 'action', label: 'Action' },
+                    { value: 'adult', label: 'Adult' },
+                    { value: 'adventure', label: 'Adventure' },
+                    { value: 'comedy', label: 'Comedy' },
+                    { value: 'drama', label: 'Drama' },
+                    { value: 'fantasy', label: 'Fantasy' },
+                    { value: 'harem', label: 'Harem' },
+                    { value: 'historical', label: 'Historical' },
+                    { value: 'horror', label: 'Horror' },
+                    { value: 'isekai', label: 'Isekai' },
+                    { value: 'josei', label: 'Josei' },
+                    { value: 'manhwa', label: 'Manhwa' },
+                    { value: 'martial-arts', label: 'Martial Arts' },
+                    { value: 'mature', label: 'Mature' },
+                    { value: 'mystery', label: 'Mystery' },
+                    { value: 'psychological', label: 'Psychological' },
+                    { value: 'romance', label: 'Romance' },
+                    { value: 'school-life', label: 'School Life' },
+                    { value: 'sci-fi', label: 'Sci-Fi' },
+                    { value: 'seinen', label: 'Seinen' },
+                    { value: 'shoujo', label: 'Shoujo' },
+                    { value: 'shounen', label: 'Shounen' },
+                    { value: 'slice-of-life', label: 'Slice of Life' },
+                    { value: 'smut', label: 'Smut' },
+                    { value: 'supernatural', label: 'Supernatural' },
+                    { value: 'tragedy', label: 'Tragedy' },
+                    { value: 'webtoon', label: 'Webtoon' },
+                ],
+                default: 'all'
+            }
+        ];
+    },
 
     async searchManga(query, page) {
         if (!query) {
@@ -107,7 +172,6 @@ module.exports = {
         }
 
         const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+');
-        // Likely pagination structure: /page/2/?s=query...
         const url = page > 1
             ? `${this.baseUrl}/search/?q=${encodedQuery}&status=all&sort=views&page=${page}`
             : `${this.baseUrl}/search?q=${encodedQuery}&status=all&sort=views`;
@@ -116,7 +180,6 @@ module.exports = {
         const doc = parseHTML(html);
 
         const mangaList = [];
-        // Toonily search results use .book-item (same as latest/popular)
         const items = doc.querySelectorAll('.book-item');
 
         items.forEach(element => {
@@ -124,13 +187,10 @@ module.exports = {
             if (!titleEl) return;
 
             const href = titleEl.getAttribute('href');
-            // Handle trailing slashes safely
             const id = href.split('/').filter(Boolean).pop();
             const title = titleEl.textContent.trim();
             const coverEl = element.querySelector('.thumb img');
             const coverUrl = coverEl ? (coverEl.getAttribute('data-src') || coverEl.src) : '';
-
-            // Fix double slashes in cover URL if present and missing protocol
             const formattedCoverUrl = coverUrl.startsWith('//') ? 'https:' + coverUrl : coverUrl;
 
             mangaList.push({
@@ -147,8 +207,25 @@ module.exports = {
     },
 
 
-    async getLatestManga(page) {
-        const url = `${this.baseUrl}/latest?page=${page}`;
+    async getLatestManga(page, filters = {}) {
+        const sort = filters.sort || 'latest';
+        const status = filters.status || 'all';
+        const genre = filters.genre || 'all';
+
+        let url;
+        if (genre !== 'all') {
+            url = `${this.baseUrl}/genres/${genre}?page=${page}`;
+        } else if (status !== 'all') {
+            url = `${this.baseUrl}/status/${status}?page=${page}`;
+        } else {
+            // Sort determines the base path
+            const sortPath = sort === 'top-day' ? 'top/day'
+                : sort === 'top-week' ? 'top/week'
+                    : sort === 'top-month' ? 'top/month'
+                        : sort;
+            url = `${this.baseUrl}/${sortPath}?page=${page}`;
+        }
+
         const html = await fetchPage(url);
         const doc = parseHTML(html);
 
@@ -160,13 +237,10 @@ module.exports = {
             if (!titleEl) return;
 
             const href = titleEl.getAttribute('href');
-            // Handle trailing slashes safely
             const id = href.split('/').filter(Boolean).pop();
             const title = titleEl.textContent.trim();
             const coverEl = element.querySelector('.thumb img');
             const coverUrl = coverEl ? (coverEl.getAttribute('data-src') || coverEl.src) : '';
-
-            // Fix double slashes in cover URL if present and missing protocol
             const formattedCoverUrl = coverUrl.startsWith('//') ? 'https:' + coverUrl : coverUrl;
 
             mangaList.push({
@@ -182,9 +256,24 @@ module.exports = {
         };
     },
 
-    async getPopularManga(page) {
-        // Toonily popular page
-        const url = `${this.baseUrl}/popular?page=${page}`;
+    async getPopularManga(page, filters = {}) {
+        const sort = filters.sort || 'popular';
+        const status = filters.status || 'all';
+        const genre = filters.genre || 'all';
+
+        let url;
+        if (genre !== 'all') {
+            url = `${this.baseUrl}/genres/${genre}?page=${page}`;
+        } else if (status !== 'all') {
+            url = `${this.baseUrl}/status/${status}?page=${page}`;
+        } else {
+            const sortPath = sort === 'top-day' ? 'top/day'
+                : sort === 'top-week' ? 'top/week'
+                    : sort === 'top-month' ? 'top/month'
+                        : sort;
+            url = `${this.baseUrl}/${sortPath}?page=${page}`;
+        }
+
         const html = await fetchPage(url);
         const doc = parseHTML(html);
 

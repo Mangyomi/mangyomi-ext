@@ -121,10 +121,118 @@ module.exports = {
         };
     },
 
-    async getPopularManga(page) {
+    getFilters() {
+        return [
+            {
+                id: 'sort',
+                label: 'Sort By',
+                type: 'select',
+                options: [
+                    { value: 'Popularity', label: 'Popularity' },
+                    { value: 'Alphabet', label: 'Alphabet' },
+                    { value: 'Subscribers', label: 'Subscribers' },
+                    { value: 'Recently+Added', label: 'Recently Added' },
+                    { value: 'Latest+Updates', label: 'Latest Updates' },
+                ],
+                default: 'Popularity'
+            },
+            {
+                id: 'status',
+                label: 'Status',
+                type: 'select',
+                options: [
+                    { value: '', label: 'All' },
+                    { value: 'Ongoing', label: 'Ongoing' },
+                    { value: 'Complete', label: 'Complete' },
+                    { value: 'Hiatus', label: 'Hiatus' },
+                    { value: 'Canceled', label: 'Canceled' },
+                ],
+                default: ''
+            },
+            {
+                id: 'type',
+                label: 'Type',
+                type: 'select',
+                options: [
+                    { value: '', label: 'All' },
+                    { value: 'Manga', label: 'Manga' },
+                    { value: 'Manhua', label: 'Manhua' },
+                    { value: 'Manhwa', label: 'Manhwa' },
+                    { value: 'OEL', label: 'OEL' },
+                    { value: 'One-shot', label: 'One-shot' },
+                ],
+                default: ''
+            },
+            {
+                id: 'tags',
+                label: 'Tags',
+                type: 'tri-state',
+                options: [
+                    { value: 'Action', label: 'Action' },
+                    { value: 'Adult', label: 'Adult' },
+                    { value: 'Adventure', label: 'Adventure' },
+                    { value: 'Comedy', label: 'Comedy' },
+                    { value: 'Doujinshi', label: 'Doujinshi' },
+                    { value: 'Drama', label: 'Drama' },
+                    { value: 'Ecchi', label: 'Ecchi' },
+                    { value: 'Fantasy', label: 'Fantasy' },
+                    { value: 'Gender+Bender', label: 'Gender Bender' },
+                    { value: 'Harem', label: 'Harem' },
+                    { value: 'Historical', label: 'Historical' },
+                    { value: 'Horror', label: 'Horror' },
+                    { value: 'Isekai', label: 'Isekai' },
+                    { value: 'Josei', label: 'Josei' },
+                    { value: 'Martial+Arts', label: 'Martial Arts' },
+                    { value: 'Mature', label: 'Mature' },
+                    { value: 'Mecha', label: 'Mecha' },
+                    { value: 'Mystery', label: 'Mystery' },
+                    { value: 'One+Shot', label: 'One Shot' },
+                    { value: 'Psychological', label: 'Psychological' },
+                    { value: 'Romance', label: 'Romance' },
+                    { value: 'School+Life', label: 'School Life' },
+                    { value: 'Sci-fi', label: 'Sci-Fi' },
+                    { value: 'Seinen', label: 'Seinen' },
+                    { value: 'Shoujo', label: 'Shoujo' },
+                    { value: 'Shoujo+Ai', label: 'Shoujo Ai' },
+                    { value: 'Shounen', label: 'Shounen' },
+                    { value: 'Shounen+Ai', label: 'Shounen Ai' },
+                    { value: 'Slice+of+Life', label: 'Slice of Life' },
+                    { value: 'Smut', label: 'Smut' },
+                    { value: 'Sports', label: 'Sports' },
+                    { value: 'Supernatural', label: 'Supernatural' },
+                    { value: 'Tragedy', label: 'Tragedy' },
+                    { value: 'Yaoi', label: 'Yaoi' },
+                    { value: 'Yuri', label: 'Yuri' },
+                ],
+                default: { include: [], exclude: [] }
+            }
+        ];
+    },
+
+    async getPopularManga(page, filters = {}) {
         try {
             const offset = (page - 1) * 32;
-            const url = `${BASE_URL}/search/data?limit=32&offset=${offset}&sort=Popularity&order=Descending&official=Any&display_mode=Full+Display`;
+            const sort = filters.sort || 'Popularity';
+            const status = filters.status || '';
+            const type = filters.type || '';
+            const tags = filters.tags || { include: [], exclude: [] };
+
+            let url = `${BASE_URL}/search/data?limit=32&offset=${offset}&sort=${sort}&order=Descending&official=Any&display_mode=Full+Display`;
+            if (status) url += `&included_status=${status}`;
+            if (type) url += `&included_type=${type}`;
+
+            // Handle tri-state tags
+            if (tags.include && tags.include.length > 0) {
+                for (const tag of tags.include) {
+                    url += `&included_tag=${tag}`;
+                }
+            }
+            if (tags.exclude && tags.exclude.length > 0) {
+                for (const tag of tags.exclude) {
+                    url += `&excluded_tag=${tag}`;
+                }
+            }
+
             const html = await fetchPage(url);
             const doc = parseHTML(html);
 
@@ -139,10 +247,30 @@ module.exports = {
         }
     },
 
-    async getLatestManga(page) {
+    async getLatestManga(page, filters = {}) {
         try {
             const offset = (page - 1) * 32;
-            const url = `${BASE_URL}/search/data?limit=32&offset=${offset}&sort=Latest+Updates&order=Descending&official=Any&display_mode=Full+Display`;
+            const sort = filters.sort || 'Latest+Updates';
+            const status = filters.status || '';
+            const type = filters.type || '';
+            const tags = filters.tags || { include: [], exclude: [] };
+
+            let url = `${BASE_URL}/search/data?limit=32&offset=${offset}&sort=${sort}&order=Descending&official=Any&display_mode=Full+Display`;
+            if (status) url += `&included_status=${status}`;
+            if (type) url += `&included_type=${type}`;
+
+            // Handle tri-state tags
+            if (tags.include && tags.include.length > 0) {
+                for (const tag of tags.include) {
+                    url += `&included_tag=${tag}`;
+                }
+            }
+            if (tags.exclude && tags.exclude.length > 0) {
+                for (const tag of tags.exclude) {
+                    url += `&excluded_tag=${tag}`;
+                }
+            }
+
             const html = await fetchPage(url);
             const doc = parseHTML(html);
 

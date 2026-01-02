@@ -166,10 +166,83 @@ module.exports = {
         };
     },
 
+    getFilters() {
+        return [
+            {
+                id: 'sort',
+                label: 'Order By',
+                type: 'select',
+                options: [
+                    { value: 'newest', label: 'Newest' },
+                    { value: 'latest', label: 'Latest Updates' },
+                    { value: 'topread', label: 'Top Read' },
+                ],
+                default: 'latest'
+            },
+            {
+                id: 'status',
+                label: 'Status',
+                type: 'select',
+                options: [
+                    { value: 'all', label: 'All' },
+                    { value: 'completed', label: 'Completed' },
+                    { value: 'ongoing', label: 'Ongoing' },
+                ],
+                default: 'all'
+            },
+            {
+                id: 'genre',
+                label: 'Genre',
+                type: 'select',
+                options: [
+                    { value: 'all', label: 'All Genres' },
+                    { value: 'action', label: 'Action' },
+                    { value: 'adventure', label: 'Adventure' },
+                    { value: 'comedy', label: 'Comedy' },
+                    { value: 'drama', label: 'Drama' },
+                    { value: 'fantasy', label: 'Fantasy' },
+                    { value: 'harem', label: 'Harem' },
+                    { value: 'historical', label: 'Historical' },
+                    { value: 'horror', label: 'Horror' },
+                    { value: 'isekai', label: 'Isekai' },
+                    { value: 'josei', label: 'Josei' },
+                    { value: 'martial-arts', label: 'Martial Arts' },
+                    { value: 'mature', label: 'Mature' },
+                    { value: 'mystery', label: 'Mystery' },
+                    { value: 'psychological', label: 'Psychological' },
+                    { value: 'romance', label: 'Romance' },
+                    { value: 'school-life', label: 'School Life' },
+                    { value: 'sci-fi', label: 'Sci-Fi' },
+                    { value: 'seinen', label: 'Seinen' },
+                    { value: 'shoujo', label: 'Shoujo' },
+                    { value: 'shounen', label: 'Shounen' },
+                    { value: 'slice-of-life', label: 'Slice of Life' },
+                    { value: 'sports', label: 'Sports' },
+                    { value: 'supernatural', label: 'Supernatural' },
+                    { value: 'tragedy', label: 'Tragedy' },
+                    { value: 'webtoons', label: 'Webtoons' },
+                ],
+                default: 'all'
+            }
+        ];
+    },
 
-    async getPopularManga(page) {
+    async getPopularManga(page, filters = {}) {
         try {
-            const url = `${BASE_URL}/manga-list/hot-manga?page=${page}`;
+            // Build filter code from sort + status combination
+            // Grid: newest=1-3, latest=4-6, topread=7-9 x all/completed/ongoing
+            const filterGrid = {
+                'newest-all': 1, 'newest-completed': 2, 'newest-ongoing': 3,
+                'latest-all': 4, 'latest-completed': 5, 'latest-ongoing': 6,
+                'topread-all': 7, 'topread-completed': 8, 'topread-ongoing': 9
+            };
+
+            const sort = filters.sort || 'topread';
+            const status = filters.status || 'all';
+            const genre = filters.genre || 'all';
+            const filterCode = filterGrid[`${sort}-${status}`] || 7;
+
+            const url = `${BASE_URL}/genre/${genre}?filter=${filterCode}&page=${page}`;
             const html = await fetchPage(url);
             const doc = parseHTML(html);
 
@@ -184,8 +257,19 @@ module.exports = {
     },
 
 
-    async getLatestManga(page) {
-        const url = `${BASE_URL}/manga-list/latest-manga?page=${page}`;
+    async getLatestManga(page, filters = {}) {
+        const filterGrid = {
+            'newest-all': 1, 'newest-completed': 2, 'newest-ongoing': 3,
+            'latest-all': 4, 'latest-completed': 5, 'latest-ongoing': 6,
+            'topread-all': 7, 'topread-completed': 8, 'topread-ongoing': 9
+        };
+
+        const sort = filters.sort || 'latest';
+        const status = filters.status || 'all';
+        const genre = filters.genre || 'all';
+        const filterCode = filterGrid[`${sort}-${status}`] || 4;
+
+        const url = `${BASE_URL}/genre/${genre}?filter=${filterCode}&page=${page}`;
         const html = await fetchPage(url);
         const doc = parseHTML(html);
 
