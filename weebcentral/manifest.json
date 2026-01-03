@@ -1,7 +1,7 @@
 {
     "id": "weebcentral",
     "name": "Weeb Central",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "baseUrl": "https://weebcentral.com",
     "icon": {
         "png": "icon.png"

@@ -1,6 +1,5 @@
-
-
-const { JSDOM } = require('jsdom');
+// Extension runs in sandboxed browser environment
+// Available APIs: fetch (domain-whitelisted), parseHTML (browser-native DOMParser)
 
 const BASE_URL = 'https://toonily.me';
 
@@ -74,9 +73,15 @@ async function fetchPage(url, retries = 2, customHeaders = {}) {
 }
 
 
-function parseHTML(html) {
-    const dom = new JSDOM(html);
-    return dom.window.document;
+// parseHTML uses browser-native DOMParser
+// parseHTML uses browser-native DOMParser
+function parseHTMLDoc(html) {
+    const globalParseHTML = typeof parseHTML !== 'undefined' ? parseHTML : null;
+    if (globalParseHTML) {
+        return globalParseHTML(html);
+    }
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
 }
 
 
@@ -177,7 +182,7 @@ module.exports = {
             : `${this.baseUrl}/search?q=${encodedQuery}&status=all&sort=views`;
 
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const mangaList = [];
         const items = doc.querySelectorAll('.book-item');
@@ -227,7 +232,7 @@ module.exports = {
         }
 
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const mangaList = [];
         const items = doc.querySelectorAll('.book-item');
@@ -275,7 +280,7 @@ module.exports = {
         }
 
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const mangaList = [];
         const items = doc.querySelectorAll('.book-item');
@@ -308,7 +313,7 @@ module.exports = {
     async getMangaDetails(mangaId) {
         const url = `${this.baseUrl}/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const title = doc.querySelector('.name.box h1')?.textContent.trim() || 'Unknown';
         const coverEl = doc.querySelector('.cover img');
@@ -355,7 +360,7 @@ module.exports = {
     async getChapterList(mangaId) {
         const url = `${this.baseUrl}/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const chapters = [];
         const chapterItems = doc.querySelectorAll('#chapter-list li');
@@ -410,7 +415,7 @@ module.exports = {
         const html = await fetchPage(url, 2, {
             'Referer': `${this.baseUrl}/${mangaId}`
         });
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const pages = [];
         // Toonily uses .chapter-image for page containers

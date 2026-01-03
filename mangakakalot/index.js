@@ -1,9 +1,5 @@
-
-
-const { JSDOM } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+// Extension runs in sandboxed environment
+// Available APIs: fetch (domain-whitelisted), parseHTML (DOMParser-based)
 
 const BASE_URL = 'https://www.mangakakalot.gg';
 
@@ -62,9 +58,18 @@ async function fetchPage(url, retries = 2) {
 }
 
 
-function parseHTML(html) {
-    const dom = new JSDOM(html);
-    return dom.window.document;
+// parseHTML is provided by the sandbox environment
+// It uses browser-native DOMParser for safe HTML parsing
+function parseHTMLDoc(html) {
+    // The sandbox provides parseHTML as a global
+    // We use a different function name to avoid conflict
+    const globalParseHTML = typeof parseHTML !== 'undefined' ? parseHTML : null;
+    if (globalParseHTML) {
+        return globalParseHTML(html);
+    }
+    // Fallback for non-sandboxed environments (development)
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
 }
 
 
@@ -244,7 +249,7 @@ module.exports = {
 
             const url = `${BASE_URL}/genre/${genre}?filter=${filterCode}&page=${page}`;
             const html = await fetchPage(url);
-            const doc = parseHTML(html);
+            const doc = parseHTMLDoc(html);
 
             return {
                 manga: parseMangaList(doc),
@@ -271,7 +276,7 @@ module.exports = {
 
         const url = `${BASE_URL}/genre/${genre}?filter=${filterCode}&page=${page}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseMangaList(doc),
@@ -284,7 +289,7 @@ module.exports = {
         const searchQuery = query.replace(/\s+/g, '_');
         const url = `${BASE_URL}/search/story/${searchQuery}?page=${page}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseMangaList(doc),
@@ -296,7 +301,7 @@ module.exports = {
     async getMangaDetails(mangaId) {
         const url = `${BASE_URL}/manga/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         // Extract basic info
         const title = doc.querySelector('h1')?.textContent?.trim() || mangaId;
@@ -438,7 +443,7 @@ module.exports = {
     async getChapterList(mangaId) {
         const url = `${BASE_URL}/manga/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const chapters = [];
         const chapterLinks = doc.querySelectorAll('.chapter-list a, .row-content-chapter a, a.chapter-name');
@@ -489,7 +494,7 @@ module.exports = {
     async getChapterPages(chapterId) {
         const url = `${BASE_URL}/manga/${chapterId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const pages = [];
         const container = doc.querySelector('.container-chapter-reader, .vung-doc, #vungdoc');

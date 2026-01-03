@@ -1,6 +1,7 @@
 
 
-const { JSDOM } = require('jsdom');
+// Extension runs in sandboxed browser environment
+// Available APIs: fetch (domain-whitelisted), parseHTML (browser-native DOMParser)
 
 const BASE_URL = 'https://hentaiforce.net';
 const IMAGE_CDN = 'https://m1.hentaiforce.me';
@@ -60,9 +61,14 @@ async function fetchPage(url, retries = 2) {
 }
 
 
-function parseHTML(html) {
-    const dom = new JSDOM(html);
-    return dom.window.document;
+// parseHTML uses browser-native DOMParser
+function parseHTMLDoc(html) {
+    const globalParseHTML = typeof parseHTML !== 'undefined' ? parseHTML : null;
+    if (globalParseHTML) {
+        return globalParseHTML(html);
+    }
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
 }
 
 
@@ -280,7 +286,7 @@ module.exports = {
         try {
             const url = page === 1 ? BASE_URL : `${BASE_URL}/?page=${page}`;
             const html = await fetchPage(url);
-            const doc = parseHTML(html);
+            const doc = parseHTMLDoc(html);
 
             return {
                 manga: parseGalleryList(doc),
@@ -296,7 +302,7 @@ module.exports = {
     async getLatestManga(page) {
         const url = page === 1 ? BASE_URL : `${BASE_URL}/?page=${page}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseGalleryList(doc),
@@ -309,7 +315,7 @@ module.exports = {
         const searchQuery = encodeURIComponent(query);
         const url = `${BASE_URL}/search?q=${searchQuery}&page=${page}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseGalleryList(doc),
@@ -321,7 +327,7 @@ module.exports = {
     async getMangaDetails(mangaId) {
         const url = `${BASE_URL}/view/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         // Extract title from h1
         const title = doc.querySelector('h1')?.textContent?.trim() || `Gallery ${mangaId}`;
@@ -403,7 +409,7 @@ module.exports = {
     async getChapterPages(chapterId) {
         const url = `${BASE_URL}/view/${chapterId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const pages = [];
 

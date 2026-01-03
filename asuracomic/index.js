@@ -1,4 +1,5 @@
-const { JSDOM } = require('jsdom');
+// Extension runs in sandboxed browser environment
+// Available APIs: fetch (domain-whitelisted), parseHTML (browser-native DOMParser)
 
 const BASE_URL = 'https://asuracomic.net';
 
@@ -49,9 +50,15 @@ async function fetchPage(url, retries = 2) {
     }
 }
 
-function parseHTML(html) {
-    const dom = new JSDOM(html);
-    return dom.window.document;
+// parseHTML uses browser-native DOMParser
+// parseHTML uses browser-native DOMParser
+function parseHTMLDoc(html) {
+    const globalParseHTML = typeof parseHTML !== 'undefined' ? parseHTML : null;
+    if (globalParseHTML) {
+        return globalParseHTML(html);
+    }
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
 }
 
 function parseMangaList(doc) {
@@ -241,7 +248,7 @@ module.exports = {
         // Use series list for popular/all view with order=popular
         const url = `${BASE_URL}/series?page=${page}&order=popular`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseMangaList(doc),
@@ -253,7 +260,7 @@ module.exports = {
         // Use the homepage feed which supports pagination via /page/N
         const url = page === 1 ? `${BASE_URL}/` : `${BASE_URL}/page/${page}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseLatestManga(doc),
@@ -264,7 +271,7 @@ module.exports = {
     async searchManga(query, page) {
         const url = `${BASE_URL}/series?page=${page}&name=${encodeURIComponent(query)}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         return {
             manga: parseMangaList(doc),
@@ -275,7 +282,7 @@ module.exports = {
     async getMangaDetails(mangaId) {
         const url = `${BASE_URL}/series/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         // Title - look for the specific title span (text-xl font-bold)
         let title = '';
@@ -393,7 +400,7 @@ module.exports = {
     async getChapterList(mangaId) {
         const url = `${BASE_URL}/series/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const chapters = [];
         const seenChapters = new Set();

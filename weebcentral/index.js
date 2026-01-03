@@ -1,4 +1,5 @@
-const { JSDOM } = require('jsdom');
+// Extension runs in sandboxed browser environment
+// Available APIs: fetch (domain-whitelisted), parseHTML (browser-native DOMParser)
 
 const BASE_URL = 'https://weebcentral.com';
 
@@ -50,9 +51,15 @@ async function fetchPage(url, retries = 2) {
     }
 }
 
-function parseHTML(html) {
-    const dom = new JSDOM(html);
-    return dom.window.document;
+// parseHTML uses browser-native DOMParser
+// parseHTML uses browser-native DOMParser
+function parseHTMLDoc(html) {
+    const globalParseHTML = typeof parseHTML !== 'undefined' ? parseHTML : null;
+    if (globalParseHTML) {
+        return globalParseHTML(html);
+    }
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
 }
 
 function parseMangaList(doc) {
@@ -234,7 +241,7 @@ module.exports = {
             }
 
             const html = await fetchPage(url);
-            const doc = parseHTML(html);
+            const doc = parseHTMLDoc(html);
 
             const manga = parseMangaList(doc);
             return {
@@ -272,7 +279,7 @@ module.exports = {
             }
 
             const html = await fetchPage(url);
-            const doc = parseHTML(html);
+            const doc = parseHTMLDoc(html);
 
             const manga = parseMangaList(doc);
             return {
@@ -290,7 +297,7 @@ module.exports = {
         const searchQuery = encodeURIComponent(query);
         const url = `${BASE_URL}/search/data?limit=32&offset=${offset}&text=${searchQuery}&sort=Best+Match&order=Descending&official=Any&display_mode=Full+Display`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const manga = parseMangaList(doc);
         return {
@@ -302,7 +309,7 @@ module.exports = {
     async getMangaDetails(mangaId) {
         const url = `${BASE_URL}/series/${mangaId}`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         let title = doc.querySelector('h1')?.textContent?.trim() || '';
         if (!title) {
@@ -375,7 +382,7 @@ module.exports = {
     async getChapterList(mangaId) {
         const url = `${BASE_URL}/series/${mangaId}/full-chapter-list`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const chapters = [];
         const chapterLinks = doc.querySelectorAll('a[href*="/chapters/"]');
@@ -421,7 +428,7 @@ module.exports = {
     async getChapterPages(chapterId) {
         const url = `${BASE_URL}/chapters/${chapterId}/images?reading_style=long_strip`;
         const html = await fetchPage(url);
-        const doc = parseHTML(html);
+        const doc = parseHTMLDoc(html);
 
         const pages = [];
 
